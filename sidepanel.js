@@ -721,8 +721,9 @@ function bindEvents() {
     copyPrompt(state.detailPromptId, document.getElementById('btn-detail-copy'));
   });
   document.getElementById('btn-detail-edit').addEventListener('click', () => {
+    const idToEdit = state.detailPromptId; // capture before closeDetailModal nulls it
     closeDetailModal();
-    openEditPromptModal(state.detailPromptId);
+    openEditPromptModal(idToEdit);
   });
 
   // Close modals on overlay click
