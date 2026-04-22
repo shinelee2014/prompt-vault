@@ -32,10 +32,15 @@
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
       </button>
-      <button class="icon-btn" id="btn-manage-categories" title="管理分类">
+      <button class="icon-btn" id="btn-sync-cloud" title="云同步">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-          <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+          <path d="M21 12A9 9 0 0 0 6 5.3L3 8m18-4v4h-4M3 12a9 9 0 0 0 15 6.7l3-2.7m-18 4v-4h4"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="btn-settings" title="同步设置">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
         </svg>
       </button>
     </div>
@@ -199,6 +204,38 @@
           </svg>
           复制内容
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: Settings ============ -->
+  <div class="modal-overlay" id="modal-settings" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">同步设置</h2>
+        <button class="icon-btn modal-close" id="btn-close-modal-settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">GitHub Token <span class="required">*</span></label>
+          <input type="password" id="setting-github-token" class="form-input" placeholder="ghp_xxx..." />
+          <p class="form-hint" style="font-size:11px;color:var(--text-muted);margin-top:4px;">需 Classic Token 并授予 `repo` 权限。</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">同步目标仓库 <span class="required">*</span></label>
+          <input type="text" id="setting-repo-name" class="form-input" value="prompt-vault-data" />
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" id="btn-sync-pull" style="color:var(--accent-1); border-color:var(--accent-1);">下载 (Pull)</button>
+          <button class="btn btn-ghost" id="btn-sync-push" style="color:var(--accent-2); border-color:var(--accent-2);">上传 (Push)</button>
+        </div>
+        <button class="btn btn-primary" id="btn-save-settings">保存配置</button>
       </div>
     </div>
   </div>

@@ -28,5 +28,7 @@
     "storage",
     "clipboardWrite"
   ],
-  "host_permissions": []
+  "host_permissions": [
+    "https://api.github.com/*"
+  ]
 }

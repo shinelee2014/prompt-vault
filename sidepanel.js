@@ -1,5 +1,6 @@
 // sidepanel.js - Main application logic
 import { saveImage, getImage, deleteImage, getAllImages } from './db.js';
+import { pushToCloud, pullFromCloud } from './github_sync.js';
 
 // ========================
 // State
@@ -13,6 +14,8 @@ let state = {
   editingPromptId: null,  // null = new
   detailPromptId: null,
   pendingImageDataUrl: null, // image being added in the form
+  githubToken: '',
+  syncRepo: 'prompt-vault-data'
 };
 
 // ========================
@@ -20,13 +23,15 @@ let state = {
 // ========================
 async function loadFromStorage() {
   return new Promise((resolve) => {
-    chrome.storage.local.get(['prompts', 'categories'], (result) => {
+    chrome.storage.local.get(['prompts', 'categories', 'githubToken', 'syncRepo'], (result) => {
       state.prompts = result.prompts || [];
       state.categories = result.categories || [
         { id: genId(), name: '通用' },
         { id: genId(), name: '写作' },
         { id: genId(), name: '编程' },
       ];
+      state.githubToken = result.githubToken || '';
+      state.syncRepo = result.syncRepo || 'prompt-vault-data';
       resolve();
     });
   });
@@ -37,6 +42,8 @@ async function saveToStorage() {
     chrome.storage.local.set({
       prompts: state.prompts,
       categories: state.categories,
+      githubToken: state.githubToken,
+      syncRepo: state.syncRepo
     }, resolve);
   });
 }
@@ -607,12 +614,93 @@ function highlight(htmlStr, query) {
 }
 
 // ========================
+// Settings & Sync
+// ========================
+function openSettingsModal() {
+  document.getElementById('setting-github-token').value = state.githubToken;
+  document.getElementById('setting-repo-name').value = state.syncRepo;
+  document.getElementById('modal-settings').style.display = 'flex';
+}
+
+function closeSettingsModal() {
+  document.getElementById('modal-settings').style.display = 'none';
+}
+
+async function saveSettings() {
+  const token = document.getElementById('setting-github-token').value.trim();
+  const repo = document.getElementById('setting-repo-name').value.trim();
+  
+  if (token && !token.startsWith('ghp_') && !token.startsWith('github_')) {
+    showToast('Token 格式可能不正确，必须为 Classic Token', 'error');
+  }
+  
+  state.githubToken = token;
+  state.syncRepo = repo || 'prompt-vault-data';
+  await saveToStorage();
+  closeSettingsModal();
+  showToast('配置已保存');
+}
+
+async function performPush() {
+  if (!state.githubToken) return showToast('未配置 GitHub Token', 'error');
+  const btn = document.getElementById('btn-sync-push');
+  btn.textContent = '上传中...';
+  btn.disabled = true;
+  try {
+    await pushToCloud(state.githubToken, state.syncRepo, state.prompts, state.categories, state.imageCache);
+    showToast('上传云端成功');
+  } catch(e) {
+    showToast(e.message, 'error');
+  } finally {
+    btn.textContent = '上传 (Push)';
+    btn.disabled = false;
+  }
+}
+
+async function performPull() {
+  if (!state.githubToken) return showToast('未配置 GitHub Token', 'error');
+  if (!confirm('拉取将覆盖本地修改，确定要继续吗？')) return;
+  const btn = document.getElementById('btn-sync-pull');
+  btn.textContent = '下载中...';
+  btn.disabled = true;
+  try {
+    const cloudData = await pullFromCloud(state.githubToken, state.syncRepo);
+    state.prompts = cloudData.prompts;
+    state.categories = cloudData.categories;
+    state.imageCache = cloudData.imageCache;
+    
+    // update local db images
+    for (const [id, url] of Object.entries(cloudData.imageCache)) {
+      await saveImage(id, url);
+    }
+    await saveToStorage();
+    renderCategoryTabs();
+    renderPromptList();
+    showToast('云端数据拉取成功');
+    closeSettingsModal();
+  } catch(e) {
+    showToast('拉取失败: ' + e.message, 'error');
+  } finally {
+    btn.textContent = '下载 (Pull)';
+    btn.disabled = false;
+  }
+}
+
+// ========================
 // Event Bindings
 // ========================
 function bindEvents() {
   // Header add button
   document.getElementById('btn-add-prompt').addEventListener('click', openAddPromptModal);
   document.getElementById('btn-manage-categories').addEventListener('click', openCategoryModal);
+
+  // Settings & Sync
+  document.getElementById('btn-settings').addEventListener('click', openSettingsModal);
+  document.getElementById('btn-sync-cloud').addEventListener('click', openSettingsModal);
+  document.getElementById('btn-close-modal-settings').addEventListener('click', closeSettingsModal);
+  document.getElementById('btn-save-settings').addEventListener('click', saveSettings);
+  document.getElementById('btn-sync-push').addEventListener('click', performPush);
+  document.getElementById('btn-sync-pull').addEventListener('click', performPull);
 
   // Prompt modal
   document.getElementById('btn-close-modal-prompt').addEventListener('click', closePromptModal);
@@ -638,7 +726,7 @@ function bindEvents() {
   });
 
   // Close modals on overlay click
-  ['modal-prompt', 'modal-categories', 'modal-detail'].forEach(id => {
+  ['modal-prompt', 'modal-categories', 'modal-detail', 'modal-settings'].forEach(id => {
     document.getElementById(id).addEventListener('click', (e) => {
       if (e.target === e.currentTarget) {
         e.currentTarget.style.display = 'none';
@@ -649,7 +737,7 @@ function bindEvents() {
   // Keyboard ESC
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      ['modal-prompt', 'modal-categories', 'modal-detail'].forEach(id => {
+      ['modal-prompt', 'modal-categories', 'modal-detail', 'modal-settings'].forEach(id => {
         document.getElementById(id).style.display = 'none';
       });
     }
