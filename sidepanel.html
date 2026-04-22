@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prompt Vault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L13.09 8.26L19 7L15.45 11.91L21 14L15.45 16.09L19 21L13.09 15.74L12 22L10.91 15.74L5 21L8.55 16.09L3 14L8.55 11.91L5 7L10.91 8.26L12 2Z" fill="url(#logo-grad)"/>
+          <defs>
+            <linearGradient id="logo-grad" x1="3" y1="2" x2="21" y2="22" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#818CF8"/>
+              <stop offset="1" stop-color="#C084FC"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <h1 class="header-title">Prompt Vault</h1>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="btn-add-prompt" title="新增 Prompt">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="btn-manage-categories" title="管理分类">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+          <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Search Bar -->
+  <div class="search-wrap">
+    <div class="search-field">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="search-input" class="search-input" placeholder="搜索 Prompt..." autocomplete="off" />
+      <button class="search-clear" id="btn-search-clear" title="清除">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Category Tabs -->
+  <div class="category-bar" id="category-bar">
+    <div class="category-tabs" id="category-tabs">
+      <!-- Tabs injected by JS -->
+    </div>
+  </div>
+
+  <!-- Prompt List -->
+  <main class="main-content" id="main-content">
+    <div class="prompt-list" id="prompt-list">
+      <!-- Cards injected by JS -->
+    </div>
+    <div class="empty-state" id="empty-state" style="display:none;">
+      <div class="empty-icon">
+        <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="12" y="16" width="56" height="48" rx="8" stroke="url(#eg)" stroke-width="2.5"/>
+          <path d="M28 32h24M28 40h16" stroke="url(#eg2)" stroke-width="2.5" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="eg" x1="12" y1="16" x2="68" y2="64" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#818CF8"/><stop offset="1" stop-color="#C084FC"/>
+            </linearGradient>
+            <linearGradient id="eg2" x1="28" y1="32" x2="52" y2="40" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#818CF8"/><stop offset="1" stop-color="#C084FC"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <p class="empty-title">还没有 Prompt</p>
+      <p class="empty-sub">点击右上角 + 添加你的第一个</p>
+    </div>
+  </main>
+
+  <!-- ============ MODAL: Add/Edit Prompt ============ -->
+  <div class="modal-overlay" id="modal-prompt" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-prompt-title">新增 Prompt</h2>
+        <button class="icon-btn modal-close" id="btn-close-modal-prompt">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">标题 <span class="required">*</span></label>
+          <input type="text" id="prompt-title" class="form-input" placeholder="给这个 Prompt 起个名字..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">分类</label>
+          <div class="select-wrap">
+            <select id="prompt-category" class="form-select">
+              <!-- Options injected by JS -->
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prompt 内容 <span class="required">*</span></label>
+          <textarea id="prompt-content" class="form-textarea" placeholder="输入你的 Prompt 内容..." rows="6"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">截图 / 图片</label>
+          <div class="image-upload-area" id="image-upload-area">
+            <div class="image-placeholder" id="image-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="3"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              <span>点击上传或拖拽图片</span>
+              <span class="hint">支持任意尺寸的图片</span>
+            </div>
+            <img id="image-preview" class="image-preview" style="display:none;" alt="preview" />
+            <button class="image-remove-btn" id="btn-remove-image" style="display:none;" title="移除图片">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          <input type="file" id="image-file-input" accept="image/*" style="display:none;" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="btn-cancel-prompt">取消</button>
+        <button class="btn btn-primary" id="btn-save-prompt">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: Category Manager ============ -->
+  <div class="modal-overlay" id="modal-categories" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">管理分类</h2>
+        <button class="icon-btn modal-close" id="btn-close-modal-categories">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="category-add-row">
+          <input type="text" id="new-category-name" class="form-input" placeholder="新分类名称..." />
+          <button class="btn btn-primary btn-sm" id="btn-add-category">添加</button>
+        </div>
+        <div class="category-list" id="category-list">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btn-close-categories-done">完成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: Prompt Detail ============ -->
+  <div class="modal-overlay" id="modal-detail" style="display:none;">
+    <div class="modal modal-detail">
+      <div class="modal-header">
+        <h2 class="modal-title" id="detail-title">Prompt 详情</h2>
+        <button class="icon-btn modal-close" id="btn-close-modal-detail">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-image-wrap" id="detail-image-wrap" style="display:none;">
+          <img id="detail-image" src="" alt="" class="detail-image" />
+        </div>
+        <div class="detail-meta" id="detail-meta"></div>
+        <div class="detail-content-wrap">
+          <pre id="detail-content" class="detail-content"></pre>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="btn-detail-edit">编辑</button>
+        <button class="btn btn-primary" id="btn-detail-copy">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+          </svg>
+          复制内容
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="sidepanel.js"></script>
+</body>
+</html>
