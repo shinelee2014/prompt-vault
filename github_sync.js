@@ -37,7 +37,8 @@ async function ensureRepo(token, owner, repo) {
     const { status: createStatus } = await githubApi('/user/repos', token, 'POST', {
       name: repo,
       private: true,
-      description: 'Prompt Vault Sync Storage'
+      description: 'Prompt Vault Sync Storage',
+      auto_init: true
     });
     if (createStatus !== 201) throw new Error(`Could not find or create repository: ${repo}`);
   }
@@ -57,21 +58,17 @@ async function uploadFile(token, owner, repo, path, base64Content, message) {
   const sha = await getFileSha(token, owner, repo, path);
   const body = {
     message,
-    content: base64Content,
-    branch: 'main'
+    content: base64Content
   };
   if (sha) body.sha = sha;
   
+  // Omit branch parameter to let GitHub use the default branch (creates one if repo is empty)
   const { status, data } = await githubApi(`/repos/${owner}/${repo}/contents/${path}`, token, 'PUT', body);
-  // Default branch might be master, the API will create it on default branch if branch parameter is invalid/omitted for new repos, but let's assume main or omit branch.
-  // Actually, omitting branch defaults to default branch.
-  delete body.branch;
-  const { status: status2, data: data2 } = await githubApi(`/repos/${owner}/${repo}/contents/${path}`, token, 'PUT', body);
   
-  if (status2 !== 200 && status2 !== 201) {
+  if (status !== 200 && status !== 201) {
     throw new Error(`Failed to upload ${path}`);
   }
-  return data2;
+  return data;
 }
 
 // Download file from GitHub
